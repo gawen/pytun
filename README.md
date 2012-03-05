@@ -8,6 +8,11 @@ For now, it is only compatible with Linux, probably Unix, maybe MacOsX, and in t
 
 ## How to use
 
+First of all, clone this repos or use `easy_install` or `pip`.
+
+    pip install pytun
+    easy_install pytun
+
 Quite easy. Use the `open()` function.
 
     import pytun
