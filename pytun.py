@@ -9,6 +9,7 @@ import os
 import fcntl
 import struct
 import logging
+import functools
 
 TUN_KO_PATH = "/dev/net/tun"
 
@@ -152,3 +153,6 @@ class TapTunnel(Tunnel):
     def __init__(self, *kargs, **kwargs):
         super(TapTunnel, self).__init__("tap", **kwargs)
 
+""" Convenient functions to open tunnels. """
+tunnel = functools.partial(Tunnel, auto_open = True)
+open = tunnel
