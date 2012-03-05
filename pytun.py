@@ -100,7 +100,7 @@ class Tunnel(object):
 
         except IOError, e:
             if e.errno == 1:
-                logger.error("Cannot open a %s tunnel '%s' because the operation is not permitted." % (self.mode_name.upper(), self.pattern, ))
+                logger.error("Cannot open a %s tunnel because the operation is not permitted." % (self.mode_name.upper(), ))
                 raise self.NotPermitted()
 
             raise
@@ -118,13 +118,13 @@ class Tunnel(object):
         if self.fd is None:
             return
             
-        logger.debug("Closing tunnel '%s'..." % (self.name, ))
+        logger.debug("Closing tunnel '%s'..." % (self.name or "", ))
 
         # Close tun.ko file
         os.close(self.fd)
         self.fd = None
 
-        logger.info("Tunnel '%s' closed." % (self.name, ))
+        logger.info("Tunnel '%s' closed." % (self.name or "", ))
 
     def send(self, buf):
         """ Send the buffer 'buf'. """
