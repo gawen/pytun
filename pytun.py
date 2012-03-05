@@ -83,6 +83,10 @@ class Tunnel(object):
             if id == self.mode:
                 return name
 
+    def fileno(self):
+        """ Standard function which makes this class 'select()' compatible. """
+        return self.fd
+
     def open(self):
         """ Create the tunnel.
             If the tunnel is already opened, the function will
