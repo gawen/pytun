@@ -44,11 +44,13 @@ def pprint_buf(buf):
     print "  " * (15 - (i % 16)) + "\t" + "".join(raws)
 
 def main():
+    # Configure pytun's logger
     pytun.logger.setLevel(logging.DEBUG)
     logging.basicConfig()
 
+    # Open the tunnel
     try:
-        tun = pytun.TunTunnel()
+        tun = pytun.open()
 
     except pytun.Tunnel.NotPermitted:
         print
@@ -84,6 +86,7 @@ def main():
     print "*" * 80
 
     try:
+        # Receive loop
         while True:
             buf = tun.recv()
 
@@ -95,6 +98,7 @@ def main():
         print "Keyboard interrupt. Closing."
     
     finally:
+        # Close the tunnel
         tun.close()
 
 
