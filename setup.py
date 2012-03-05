@@ -10,9 +10,6 @@ import os
 
 import pytun
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 setup(
     name = "pytun",
     description = "Python TUN/TAP tunnel module",
@@ -25,8 +22,6 @@ setup(
     author_email = pytun.__email__,
     url = "https://github.com/Gawen/pytun",
     license = pytun.__license__,
-    long_description = read("README.md"),
-
 
     classifiers = [
         "Development Status :: 4 - Beta",
