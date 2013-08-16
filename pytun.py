@@ -43,11 +43,14 @@ class Tunnel(object):
         "tun": 0x0001,
         "tap": 0x0002,
     }
+    
+    # No packet information flag
+    IFF_NO_PI = 0x1000
 
     # ioctl call
     TUNSETIFF = 0x400454ca
 
-    def __init__(self, mode = None, pattern = None, auto_open = None):
+    def __init__(self, mode = None, pattern = None, auto_open = None, no_pi = False):
         """ Create a new tun/tap tunnel. Its type is defined by the
             argument 'mode', whose value can be either a string or
             the system value.
@@ -58,6 +61,11 @@ class Tunnel(object):
             
             If the argument 'auto_open' is true, this constructor
             will automatically create the tunnel.
+            
+            If the argument 'no_pi' is true, the device will be
+            be opened with teh IFF_NO_PI flag. Otherwise, 4 extra
+            bytes are added to the beginning of the packet (2 flag
+            bytes and 2 protocol bytes).
 
         """
 
@@ -69,6 +77,7 @@ class Tunnel(object):
 
         self.pattern = pattern
         self.mode = mode
+        self.no_pi = self.IFF_NO_PI if no_pi else 0x0000
         
         self.name = None
         self.fd = None
@@ -110,7 +119,7 @@ class Tunnel(object):
         
         logger.debug("Opening %s tunnel '%s'..." % (self.mode_name.upper(), self.pattern, ))
         try:
-            ret = fcntl.ioctl(self.fd, self.TUNSETIFF, struct.pack("16sH", self.pattern, self.mode))
+            ret = fcntl.ioctl(self.fd, self.TUNSETIFF, struct.pack("16sH", self.pattern, self.mode | self.no_pi))
 
         except IOError, e:
             if e.errno == 1:
