@@ -16,6 +16,7 @@ __status__ = "Beta"
 
 import os
 import fcntl
+import socket
 import struct
 import logging
 import functools
@@ -49,6 +50,7 @@ class Tunnel(object):
 
     # ioctl call
     TUNSETIFF = 0x400454ca
+    SIOCSIFHWADDR = 0x8924
 
     def __init__(self, mode = None, pattern = None, auto_open = None, no_pi = False):
         """ Create a new tun/tap tunnel. Its type is defined by the
@@ -161,6 +163,16 @@ class Tunnel(object):
         size = size if size is not None else 1500
 
         return os.read(self.fd, size)
+
+    def set_mac(self, mac):
+        """ Sets the MAC address of the device to 'mac'.
+            parameter 'mac' should be a binary representation
+            of the MAC address
+            Note: Will fail for TUN devices
+        """
+        mac = map(ord, mac)
+        ifreq = struct.pack('16sH6B8', self.name, socket.AF_UNIX, *mac)
+        fcntl.ioctl(self.fileno(), self.SIOCSIFHWADDR, ifreq)
 
     def __repr__(self):
         return "<%s tunnel '%s'>" % (self.mode_name.capitalize(), self.name, )
