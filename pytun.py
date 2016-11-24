@@ -7,7 +7,7 @@ manage tun/tap tunnels on Linux (for now).
 
 __author__ = "Gawen Arab"
 __copyright__ = "Copyright 2012, Gawen Arab"
-__credits__ = ["Gawen Arab"]
+__credits__ = ["Gawen Arab", "Ben Lapid"]
 __license__ = "MIT"
 __version__ = "1.0.1"
 __maintainer__ = "Gawen Arab"
@@ -16,6 +16,7 @@ __status__ = "Beta"
 
 import os
 import fcntl
+import socket
 import struct
 import logging
 import functools
@@ -43,11 +44,15 @@ class Tunnel(object):
         "tun": 0x0001,
         "tap": 0x0002,
     }
+    
+    # No packet information flag
+    IFF_NO_PI = 0x1000
 
     # ioctl call
     TUNSETIFF = 0x400454ca
+    SIOCSIFHWADDR = 0x8924
 
-    def __init__(self, mode = None, pattern = None, auto_open = None):
+    def __init__(self, mode = None, pattern = None, auto_open = None, no_pi = False):
         """ Create a new tun/tap tunnel. Its type is defined by the
             argument 'mode', whose value can be either a string or
             the system value.
@@ -58,6 +63,11 @@ class Tunnel(object):
             
             If the argument 'auto_open' is true, this constructor
             will automatically create the tunnel.
+            
+            If the argument 'no_pi' is true, the device will be
+            be opened with teh IFF_NO_PI flag. Otherwise, 4 extra
+            bytes are added to the beginning of the packet (2 flag
+            bytes and 2 protocol bytes).
 
         """
 
@@ -69,6 +79,7 @@ class Tunnel(object):
 
         self.pattern = pattern
         self.mode = mode
+        self.no_pi = self.IFF_NO_PI if no_pi else 0x0000
         
         self.name = None
         self.fd = None
@@ -110,7 +121,7 @@ class Tunnel(object):
         
         logger.debug("Opening %s tunnel '%s'..." % (self.mode_name.upper(), self.pattern, ))
         try:
-            ret = fcntl.ioctl(self.fd, self.TUNSETIFF, struct.pack("16sH", self.pattern, self.mode))
+            ret = fcntl.ioctl(self.fd, self.TUNSETIFF, struct.pack("16sH", self.pattern, self.mode | self.no_pi))
 
         except IOError, e:
             if e.errno == 1:
@@ -152,6 +163,16 @@ class Tunnel(object):
         size = size if size is not None else 1500
 
         return os.read(self.fd, size)
+
+    def set_mac(self, mac):
+        """ Sets the MAC address of the device to 'mac'.
+            parameter 'mac' should be a binary representation
+            of the MAC address
+            Note: Will fail for TUN devices
+        """
+        mac = map(ord, mac)
+        ifreq = struct.pack('16sH6B8', self.name, socket.AF_UNIX, *mac)
+        fcntl.ioctl(self.fileno(), self.SIOCSIFHWADDR, ifreq)
 
     def __repr__(self):
         return "<%s tunnel '%s'>" % (self.mode_name.capitalize(), self.name, )
