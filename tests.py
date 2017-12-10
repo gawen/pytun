@@ -41,7 +41,7 @@ def pprint_buf(buf):
         
         print hex2(ord(c), 2),
 
-    print "  " * (15 - (i % 16)) + "\t" + "".join(raws)
+    print "   " * (15 - (i % 16)) + "\t" + "".join(raws)
 
 def main():
     # Configure pytun's logger
