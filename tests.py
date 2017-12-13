@@ -20,7 +20,7 @@ def pprint_buf(buf):
         return h
 
     def displayable_char(c):
-        if ord(c) < 0x20:
+        if ord(c) < 0x20 or ord(c) >= 0x7f:
             c = "."
 
         return c
@@ -41,7 +41,7 @@ def pprint_buf(buf):
         
         print hex2(ord(c), 2),
 
-    print "  " * (15 - (i % 16)) + "\t" + "".join(raws)
+    print "   " * (15 - (i % 16)) + "\t" + "".join(raws)
 
 def main():
     # Configure pytun's logger
@@ -55,7 +55,7 @@ def main():
     except pytun.Tunnel.NotPermitted:
         print
         print "*" * 80
-        print "You do have the rights to access the file %s." % (pytun.TUN_KO_PATH, )
+        print "You don't have the rights to access the file %s." % (pytun.TUN_KO_PATH, )
         print "Give the access of this file to pytun, or if you trust me,"
         print "elevate this current script to root level."
         print "*" * 80
