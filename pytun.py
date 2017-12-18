@@ -51,6 +51,13 @@ class Tunnel(object):
     # ioctl call
     TUNSETIFF = 0x400454ca
     SIOCSIFHWADDR = 0x8924
+    SIOCSIFADDR = 0x8916
+    SIOCSIFFLAGS = 0x8914
+    IFF_UP          = 0x1
+    IFF_POINTOPOINT = 0x10
+    IFF_RUNNING     = 0x40
+    IFF_NOARP       = 0x80
+    IFF_MULTICAST   = 0x1000
 
     def __init__(self, mode = None, pattern = None, auto_open = None, no_pi = False):
         """ Create a new tun/tap tunnel. Its type is defined by the
@@ -173,6 +180,19 @@ class Tunnel(object):
         mac = map(ord, mac)
         ifreq = struct.pack('16sH6B8', self.name, socket.AF_UNIX, *mac)
         fcntl.ioctl(self.fileno(), self.SIOCSIFHWADDR, ifreq)
+
+    def set_ipv4(self, ip):
+        """ Sets the IP address (ifr_addr) of the device
+            parameter 'ip' should be string representation of IP address
+            This does the same as ifconfig.
+        """
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        bin_ip = socket.inet_aton(ip)
+        ifreq = struct.pack('16sH2s4s8s', self.name, socket.AF_INET, '\x00'*2, bin_ip, '\x00'*8)
+        fcntl.ioctl(sock, self.SIOCSIFADDR, ifreq)
+        ifreq = struct.pack('16sH', self.name, self.IFF_UP|self.IFF_POINTOPOINT|self.IFF_RUNNING|self.IFF_MULTICAST)
+        fcntl.ioctl(sock, self.SIOCSIFFLAGS, ifreq)
+        
 
     def __repr__(self):
         return "<%s tunnel '%s'>" % (self.mode_name.capitalize(), self.name, )
