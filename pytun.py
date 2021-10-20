@@ -130,7 +130,7 @@ class Tunnel(object):
         try:
             ret = fcntl.ioctl(self.fd, self.TUNSETIFF, struct.pack("16sH", self.pattern, self.mode | self.no_pi))
 
-        except IOError, e:
+        except IOError as e:
             if e.errno == 1:
                 logger.error("Cannot open a %s tunnel because the operation is not permitted." % (self.mode_name.upper(), ))
                 raise self.NotPermitted()
